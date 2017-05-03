@@ -26,7 +26,7 @@ public class TetrisBlock : TetrisBagSystem {
             transform.Rotate(0, 0, 90);
         }
 
-        if(Input.GetMouseButtonDown(0) && isHeld)
+        if(Input.GetMouseButtonDown(0) && isHeld && GameManager.canDropTiles)
         {
             dropTile();
         }
@@ -42,11 +42,16 @@ public class TetrisBlock : TetrisBagSystem {
             {
                 if(foundColl.transform != child)
                 {
-                    Debug.Log(foundColl);
                     return;
                 }
 
             }
+
+            foreach (Collider2D foundColl in Physics2D.OverlapAreaAll((Vector2)child.position - (Vector2.one*0.5f), (Vector2)child.position + (Vector2.one * 0.5f), LayerMask.GetMask("Enemy")))
+            {
+                return;
+            }
+
 
             bool foundBase = false;
             foreach (Collider2D foundColl in Physics2D.OverlapPointAll(child.position, LayerMask.GetMask("Base")))
