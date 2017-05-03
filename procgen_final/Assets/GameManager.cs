@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     public static int highScore;
     private static float diffCoefficient;
     private static float distanceModifier;
+    public static bool canDropTiles;
 
     //list of possible locations for enemy to spawn and try to move to
     public static Vector2[] possibleLocations = { new Vector2(0, 16),
@@ -32,6 +33,7 @@ public class GameManager : MonoBehaviour
     public static Vector2 goalPos;
     void Start()
     {
+        canDropTiles = true;
         waveCounter = 0;
         diffCoefficient = 1.2f;
 
@@ -73,11 +75,18 @@ public class GameManager : MonoBehaviour
     }
 
     //starts a new wave with the wave counter incremented by 1
-    public void waveStart()
+
+    public void newWaveStart() //used to allow access to start wave coroutine outside of script
+    {
+        StartCoroutine(startWave());
+    }
+
+    public void waveStart() //used to start initial wave
     {
         clearBoard();
         waveInProgress = false;
         waveCounter++;
+
         int spawnPicker = 0;
         int goalPicker = 0;
 
@@ -95,6 +104,39 @@ public class GameManager : MonoBehaviour
 
         goal = Instantiate(goalPrefab, goalPos, Quaternion.identity);
         GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        waveInProgress = true;
+
+    }
+
+    public IEnumerator startWave() //used to give 2 seconds stop time for each subsequent wave
+    {
+        clearBoard();
+        waveInProgress = false;
+        waveCounter++;   
+
+        int spawnPicker = 0;
+        int goalPicker = 0;
+
+        while (goalPicker == spawnPicker)
+        {
+            goalPicker = Random.Range(0, 8);
+            spawnPicker = Random.Range(0, 8);
+        }
+
+        spawnPos = possibleLocations[spawnPicker];
+        goalPos = possibleLocations[goalPicker];
+
+        distanceModifier = 0.029f * (Vector2.Distance(goalPos, spawnPos) - 25.6125f) * (Vector2.Distance(goalPos, spawnPos) - 25.6125f) + 1;
+        timer = (Vector2.Distance(goalPos, spawnPos) + distanceModifier) * diffCoefficient;
+
+        goal = Instantiate(goalPrefab, goalPos, Quaternion.identity);
+        GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+
+        canDropTiles = false;
+        Time.timeScale = 0;
+        yield return new WaitForSecondsRealtime(2);
+        Time.timeScale = 1;
+        canDropTiles = true;
         waveInProgress = true;
 
     }

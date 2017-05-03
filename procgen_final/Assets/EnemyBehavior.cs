@@ -11,6 +11,7 @@ public class EnemyBehavior : MonoBehaviour {
     private int iterationCount; //used to failsafe infinite while loop below
     public bool hasPunishedRecently = false;
     public float punishTimer = 1.5f;
+    private Vector2 previousTarget;
 	void Start () {
         manager = GameObject.Find("Game Manager");
         movingToPoint = false;
@@ -33,6 +34,7 @@ public class EnemyBehavior : MonoBehaviour {
             if(Vector2.Distance(transform.position, criticalPath[1]) < .01f)
             {
                 transform.position = criticalPath[1];
+                criticalPath[0] = previousTarget;
                 movingToPoint = false;
             }
         }
@@ -90,7 +92,7 @@ public class EnemyBehavior : MonoBehaviour {
 
         if(GameManager.timer <= 0)
         {
-            manager.GetComponent<GameManager>().waveStart();
+            manager.GetComponent<GameManager>().newWaveStart();
             Destroy(this.gameObject);
         }
 
@@ -105,14 +107,15 @@ public class EnemyBehavior : MonoBehaviour {
     }
 
     //this still needs fixing
-    private void OnCollisionEnter2D(Collision2D collision)
+    /*private void OnCollisionStay2D(Collision2D collision)
     {
         if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
         {
-            transform.position = criticalPath[0];
             movingToPoint = false;
+            transform.position = previousTarget;
+            
         }
-    }
+    }*/
 
     public class GraphVertex
     {
